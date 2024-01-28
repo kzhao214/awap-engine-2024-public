@@ -9,13 +9,15 @@ import math
 class BotPlayer(Player):
     def __init__(self, map: Map):
         self.map = map
-    
+        self.first = self.mostpath(60, True, 1)[0]
+        
+
     def play_turn(self, rc: RobotController):
         self.build_towers(rc)
         #self.towers_attack(rc)
 
     def build_towers(self, rc: RobotController):
-        location = self.mostpath(60, True, 1)[0]
+        location = self.first
         if (rc.can_build_tower(TowerType.GUNSHIP, self.indextorow(location), self.indextocol(self.indextocol(location)))):
             rc.build_tower(TowerType.GUNSHIP, self.indextorow(location), self.indextocol(self.indextocol(location)))
                 
