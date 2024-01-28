@@ -29,12 +29,9 @@ class BotPlayer(Player):
         self.startbuilding = False
         self.villagex = 2
         self.villagey = 2
-        print(map.path_length)
         self.placedsun = []
         self.solarzero = 0
-        if(map.path_length<70):
-            self.bomb_multiplier = 2
-
+        self.bloonstosend = 2
 
     def play_turn(self, rc: RobotController):
         self.build_towers(rc)
@@ -47,7 +44,7 @@ class BotPlayer(Player):
         if(self.attack==0):
             self.startbuilding = True
         if(self.counter ==0):
-            if(self.solarzero < len(self.placedsun)):
+            if(self.solarzero < len(self.placedsun) and len(self.placedsun)>5):
                 x = self.indextorow(self.placedsun[len(self.placedsun)-1])
                 y = self.indextocol(self.placedsun[len(self.placedsun)-1])
                 towertosell = rc.sense_towers_within_radius_squared(rc.get_ally_team(), x, y, 0)
@@ -66,7 +63,7 @@ class BotPlayer(Player):
                     self.villagex = 2
                     self.villagey +=4
             else:
-                self.send_bloons(rc)
+                self.send_bloons_burst(rc)
         else:
             if((len(rc.get_debris(rc.get_ally_team()))<(self.map.path_length/4) and
                 min(self.sunpositions)==0
@@ -165,7 +162,14 @@ class BotPlayer(Player):
 
     def send_bloons(self, rc: RobotController):
         if rc.can_send_debris(1, 1000):
-           print("BLOOOOOONNNNNNN SENTTTTTT")
            rc.send_debris(1, 1000)
+
+    def send_bloons_burst(self, rc: RobotController):
+        if (self.bloonstosend >= 1 and rc.get_balance(rc.get_ally_team()) >= self.bloonstosend * 54000):
+            rc.send_debris(1, 1000)
+            self.bloonstosend -= 1
+            
+
+
 
 

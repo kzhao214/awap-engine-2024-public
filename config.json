@@ -1,4 +1,4 @@
 {
-    "bots": ["bots/klam_bot2.py", "bots/klam_bot1.py"],
-    "map": "maps/squig.awap24m"
+    "bots": ["bots/klam_bot_offense.py", "bots/klam_bot1.py"],
+    "map": "maps/hilbert.awap24m"
 }
