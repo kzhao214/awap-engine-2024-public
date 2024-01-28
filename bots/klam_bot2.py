@@ -15,8 +15,8 @@ class BotPlayer(Player):
         self.attack = 0
 
     def play_turn(self, rc: RobotController):
-        if rc.can_send_debris(1, 45):
-            rc.send_debris(1, 45)
+        #if rc.can_send_debris(1, 45):
+        #    rc.send_debris(1, 45)
         self.build_towers(rc)
         self.towers_attack(rc)
 

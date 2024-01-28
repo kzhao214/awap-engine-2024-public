@@ -22,9 +22,10 @@ class BotPlayer(Player):
         self.sunpositions = self.mostpath(7, False, self.map.width*self.map.height)
         self.attack = -3
         self.solar = 0
-        self.ratio = 1
+        self.ratio = 5
         self.count = 0
         self.bomb_multiplier = 4
+        self.startbuilding = False
         print(map.path_length)
         if(map.path_length<70):
             self.bomb_multiplier = 2
@@ -38,9 +39,12 @@ class BotPlayer(Player):
         locations = self.sniperpositions.index(max(self.sniperpositions))
         locationb = self.bomberpositions.index(max(self.bomberpositions))
         locationsun = self.sunpositions.index(min(self.sunpositions))
-        if((len(rc.get_debris(rc.get_ally_team()))>(self.map.path_length/4)
-            or (min(self.sunpositions)==0)
-            and self.attack>0)):
+        if(self.attack==0):
+            self.startbuilding == True
+        if(((len(rc.get_debris(rc.get_ally_team()))<(self.map.path_length/4)
+            and min(self.sunpositions)==0)
+            or self.attack==self.ratio)
+            and self.startbuilding):
             if (rc.can_build_tower(TowerType.SOLAR_FARM, self.indextorow(locationsun), self.indextocol(locationsun))):
                 rc.build_tower(TowerType.SOLAR_FARM, self.indextorow(locationsun), self.indextocol(locationsun))
                 self.bomberpositions[locationsun] = -1
