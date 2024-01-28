@@ -21,11 +21,14 @@ class BotPlayer(Player):
         self.sniperpositions = self.mostpath(7, True, self.map.width*self.map.height)
         self.bomberpositions = self.mostpath(3, True, self.map.width*self.map.height)
         self.sunpositions = self.mostpath(7, False, self.map.width*self.map.height)
+        self.villagepositions = self.mostspaces(2, True, self.map.width*self.map.height)
         self.attack = -3
         self.solar = 0
         self.ratio = 1
         self.bomb_multiplier = 4
         self.startbuilding = False
+        self.villagex = 2
+        self.villagey = 2
         print(map.path_length)
         self.placedsun = []
         self.solarzero = 0
@@ -43,16 +46,25 @@ class BotPlayer(Player):
         locationsun = self.sunpositions.index(min(self.sunpositions))
         if(self.attack==0):
             self.startbuilding = True
-        if(self.counter ==0 and self.solarzero < len(self.placedsun)):
-            print("HIIIIIIIIIIIIIIIIIIIIIIIIIIII")
-            x = self.indextorow(self.placedsun[len(self.placedsun)-1])
-            y = self.indextocol(self.placedsun[len(self.placedsun)-1])
-            towertosell = rc.sense_towers_within_radius_squared(rc.get_ally_team(), x, y, 0)
-            print(towertosell)
-            rc.sell_tower(towertosell[0].id)
-            self.placedsun.pop(len(self.placedsun)-1)
-            if (rc.can_build_tower(TowerType.GUNSHIP, x, y)):
-                rc.build_tower(TowerType.GUNSHIP, x, y)
+        if(self.counter ==0):
+            if(self.solarzero < len(self.placedsun)):
+                x = self.indextorow(self.placedsun[len(self.placedsun)-1])
+                y = self.indextocol(self.placedsun[len(self.placedsun)-1])
+                towertosell = rc.sense_towers_within_radius_squared(rc.get_ally_team(), x, y, 0)
+                rc.sell_tower(towertosell[0].id)
+                self.placedsun.pop(len(self.placedsun)-1)
+                if (rc.can_build_tower(TowerType.GUNSHIP, x, y)):
+                    rc.build_tower(TowerType.GUNSHIP, x, y)
+            elif(self.villagex<self.map.width and self.villagey<self.map.height):
+                if(self.villagepositions[self.rowcoltoindex(self.villagey, self.villagex)]>=7):
+                    towertosell = rc.sense_towers_within_radius_squared(rc.get_ally_team(), self.villagey, self.villagex, 0)
+                    rc.sell_tower(towertosell[0].id)
+                    if (rc.can_build_tower(TowerType.REINFORCER, self.villagey, self.villagex)):
+                        rc.build_tower(TowerType.REINFORCER, self.villagey, self.villagex)
+                self.villagex +=4
+                if(self.villagex>self.map.width):
+                    self.villagex = 2
+                    self.villagey +=4
         else:
             if((len(rc.get_debris(rc.get_ally_team()))<(self.map.path_length/4) and
                 min(self.sunpositions)==0
@@ -91,6 +103,8 @@ class BotPlayer(Player):
         return index//self.map.width
     def indextocol(self, index:int):
         return index%self.map.width
+    def rowcoltoindex(self, row:int, col:int):
+        return row*self.map.width + col
 
     def mostpath(self, radius: int, is_max: bool, numreturn: int):
         path = []
@@ -122,6 +136,28 @@ class BotPlayer(Player):
                 path.pop(path.index(min(path)))
         print(returningstuff)
         """
+        return path
+    
+    def mostspaces(self, radius: int, is_max: bool, numreturn: int):
+        path = []
+        self.counter = 0
+        for location in range(self.map.width *self.map.height):
+            row = self.indextorow(location)
+            col = self.indextocol(location)
+            if(self.map.is_space(row, col)):
+                numberpath = 0
+                for a in range(2*radius):
+                    for b in range(2*radius):
+                        if (math.dist([a-radius,b-radius], [0, 0])< radius) and row+a-radius>=0 and col+b-radius>=0:
+                            if self.map.is_space(row+a-radius,col+b-radius):
+                                numberpath = numberpath + 1
+                path.append(numberpath)
+                self.counter +=1
+            else:
+                if is_max:
+                    path.append(-1)
+                else:
+                    path.append(48*48+1)
         return path
             
 
