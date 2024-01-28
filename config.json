@@ -1,4 +1,4 @@
 {
-    "bots": ["bots/klam_bot.py", "bots/nothing_bot.py"],
+    "bots": ["bots/klam_bot.py", "bots/klam_bot1.py"],
     "map": "maps/spiral.awap24m"
 }
