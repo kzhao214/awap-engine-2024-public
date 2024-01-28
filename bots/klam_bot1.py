@@ -17,16 +17,18 @@ import math
 class BotPlayer(Player):
     def __init__(self, map: Map):
         self.map = map
+        self.count = 0
         self.sniperpositions = self.mostpath(7, True, self.map.width*self.map.height)
         self.bomberpositions = self.mostpath(3, True, self.map.width*self.map.height)
         self.sunpositions = self.mostpath(7, False, self.map.width*self.map.height)
         self.attack = -3
         self.solar = 0
         self.ratio = 1
-        self.count = 0
         self.bomb_multiplier = 4
         self.startbuilding = False
         print(map.path_length)
+        self.placedsun = []
+        self.solarzero = 0
         if(map.path_length<70):
             self.bomb_multiplier = 2
 
@@ -41,33 +43,49 @@ class BotPlayer(Player):
         locationsun = self.sunpositions.index(min(self.sunpositions))
         if(self.attack==0):
             self.startbuilding = True
-        
-        if((len(rc.get_debris(rc.get_ally_team()))<(self.map.path_length/4) and
-            min(self.sunpositions)==0
-            or self.attack==self.ratio)
-            and self.startbuilding):
-            if (rc.can_build_tower(TowerType.SOLAR_FARM, self.indextorow(locationsun), self.indextocol(locationsun))):
-                rc.build_tower(TowerType.SOLAR_FARM, self.indextorow(locationsun), self.indextocol(locationsun))
-                self.bomberpositions[locationsun] = -1
-                self.sniperpositions[locationsun] = -1
-                self.sunpositions[locationsun] = 2305
-                self.attack = 0
-                self.solar += 1
+        if(self.counter ==0 and self.solarzero < len(self.placedsun)):
+            print("HIIIIIIIIIIIIIIIIIIIIIIIIIIII")
+            x = self.indextorow(self.placedsun[len(self.placedsun)-1])
+            y = self.indextocol(self.placedsun[len(self.placedsun)-1])
+            towertosell = rc.sense_towers_within_radius_squared(rc.get_ally_team(), x, y, 0)
+            print(towertosell)
+            rc.sell_tower(towertosell[0].id)
+            self.placedsun.pop(len(self.placedsun)-1)
+            if (rc.can_build_tower(TowerType.GUNSHIP, x, y)):
+                rc.build_tower(TowerType.GUNSHIP, x, y)
         else:
-            if(max(self.bomberpositions)*self.bomb_multiplier>max(self.sniperpositions)):
-                if (rc.can_build_tower(TowerType.BOMBER, self.indextorow(locationb), self.indextocol(locationb))):
-                    rc.build_tower(TowerType.BOMBER, self.indextorow(locationb), self.indextocol(locationb))
-                    self.bomberpositions[locationb] = -1
-                    self.sniperpositions[locationb] = -1
-                    self.sunpositions[locationb] = 2305
-                    self.attack += 1
+            if((len(rc.get_debris(rc.get_ally_team()))<(self.map.path_length/4) and
+                min(self.sunpositions)==0
+                or self.attack==self.ratio)
+                and self.startbuilding):
+                if (rc.can_build_tower(TowerType.SOLAR_FARM, self.indextorow(locationsun), self.indextocol(locationsun))):
+                    rc.build_tower(TowerType.SOLAR_FARM, self.indextorow(locationsun), self.indextocol(locationsun))
+                    self.bomberpositions[locationsun] = -1
+                    self.sniperpositions[locationsun] = -1
+                    self.sunpositions[locationsun] = 2305
+                    self.attack = 0
+                    self.solar += 1
+                    self.counter -= 1
+                    self.placedsun.append(locationsun)
+                    if(min(self.sunpositions)==0):
+                        self.solarzero += 1
             else:
-                if (rc.can_build_tower(TowerType.GUNSHIP, self.indextorow(locations), self.indextocol(locations))):
-                    rc.build_tower(TowerType.GUNSHIP, self.indextorow(locations), self.indextocol(locations))
-                    self.sniperpositions[locations] = -1
-                    self.bomberpositions[locations] = -1
-                    self.sunpositions[locations] = 2305
-                    self.attack += 1
+                if(max(self.bomberpositions)*self.bomb_multiplier>max(self.sniperpositions)):
+                    if (rc.can_build_tower(TowerType.BOMBER, self.indextorow(locationb), self.indextocol(locationb))):
+                        rc.build_tower(TowerType.BOMBER, self.indextorow(locationb), self.indextocol(locationb))
+                        self.bomberpositions[locationb] = -1
+                        self.sniperpositions[locationb] = -1
+                        self.sunpositions[locationb] = 2305
+                        self.attack += 1
+                        self.counter -= 1
+                else:
+                    if (rc.can_build_tower(TowerType.GUNSHIP, self.indextorow(locations), self.indextocol(locations))):
+                        rc.build_tower(TowerType.GUNSHIP, self.indextorow(locations), self.indextocol(locations))
+                        self.sniperpositions[locations] = -1
+                        self.bomberpositions[locations] = -1
+                        self.sunpositions[locations] = 2305
+                        self.attack += 1
+                        self.counter -= 1
                 
     def indextorow(self, index:int):
         return index//self.map.width
@@ -76,6 +94,7 @@ class BotPlayer(Player):
 
     def mostpath(self, radius: int, is_max: bool, numreturn: int):
         path = []
+        self.counter = 0
         for location in range(self.map.width *self.map.height):
             row = self.indextorow(location)
             col = self.indextocol(location)
@@ -87,6 +106,7 @@ class BotPlayer(Player):
                             if self.map.is_path(row+a-radius,col+b-radius):
                                 numberpath = numberpath + 1
                 path.append(numberpath)
+                self.counter +=1
             else:
                 if is_max:
                     path.append(-1)

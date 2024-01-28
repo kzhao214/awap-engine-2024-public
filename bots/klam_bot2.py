@@ -16,7 +16,7 @@ class BotPlayer(Player):
         self.placedsun = []
         self.attack = 0
         self.solarzero = 0
-        
+
     def play_turn(self, rc: RobotController):
         #if rc.can_send_debris(1, 45):
         #    rc.send_debris(1, 45)
@@ -27,7 +27,6 @@ class BotPlayer(Player):
         locations = self.sniperpositions.index(max(self.sniperpositions))
         locationb = self.bomberpositions.index(max(self.bomberpositions))
         locationsun = self.sunpositions.index(min(self.sunpositions))
-        print(self.counter)
         if(self.counter ==0 and self.solarzero < len(self.placedsun)):
             print("HIIIIIIIIIIIIIIIIIIIIIIIIIIII")
             x = self.indextorow(self.placedsun[len(self.placedsun)-1])
